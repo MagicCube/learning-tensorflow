@@ -1,3 +1,2 @@
-# Learning Tensorflow
-
-学习 TensorFlow 的自留地
+# learning-tensorflow
+Learn TensorFlow from beginner.
