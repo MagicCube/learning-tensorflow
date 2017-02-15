@@ -2,12 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-
-def genTrainDataSet(count, weight, bias):
-    x = np.linspace(-1, 1, count)
-    noise = np.random.rand(count) * 0.3
-    y = x * weight + bias + noise
-    return (x.astype(np.float32), y.astype(np.float32))
+from input_data import gen_train_dataSet
 
 
 x = tf.placeholder(tf.float32, shape=[None, ])
@@ -19,7 +14,7 @@ loss = tf.reduce_mean((pred - y) ** 2)
 train = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
 
 
-xs, ys = genTrainDataSet(100, 0.6, 2)
+xs, ys = gen_train_dataSet(100, 0.6, 2)
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     for i in xrange(100):
