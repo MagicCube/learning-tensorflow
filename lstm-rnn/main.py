@@ -3,7 +3,7 @@ import tensorflow as tf
 from input_data import InputData
 
 LEARNING_RATE = 0.001
-TRAIN_ITERATION_COUNT = 100
+TRAIN_ITERATION_COUNT = 50
 TRAIN_BATCH_SIZE = 100                      # How many sequences are there in a single training batch
 MAX_SEQ_LEN = 20                            # Length of the longest words
 
@@ -46,14 +46,27 @@ train = tf.train.AdamOptimizer(LEARNING_RATE).minimize(cost)
 correct_pred = tf.equal(tf.argmax(pred, 1), tf.argmax(y, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
+
+
+
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     for i in xrange(TRAIN_ITERATION_COUNT):
-        train_x, train_seq_len_of_x, train_y = InputData.next_batch(TRAIN_BATCH_SIZE, min_len=2, max_len=20)
+        train_x, train_seq_len_of_x, train_y = InputData.next_batch(TRAIN_BATCH_SIZE, min_len=1, max_len=20)
         sess.run(train, feed_dict={x: train_x, y: train_y, seq_len_of_x: train_seq_len_of_x})
         if (i + 1) % 10 == 0:
             print('%.2f%%, accuracy = %.2f%%' %
             ((i + 1) * 1.0 / TRAIN_ITERATION_COUNT * 100,
             sess.run(accuracy, feed_dict={x: train_x, seq_len_of_x: train_seq_len_of_x, y: train_y}) * 100))
 
+
+
+    test_input = 'h'
+    test_x = InputData.lettersToBinVectorList(test_input)
+    test_x = InputData.pad(test_x)
+    test_seq_len_of_x = len(test_input)
+    results = sess.run(tf.nn.softmax(pred), feed_dict={x: [test_x], seq_len_of_x: [test_seq_len_of_x]})
+    print('The input is "%s"' % test_input)
+    print('The next letter will be "%s"' % InputData.ALPHABETS[results.argmax()])
+    print(results[0])
 

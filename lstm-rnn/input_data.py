@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelBinarizer
 
 
 class InputData:
-    ALPHABETS = [letter for letter in 'helo']
+    ALPHABETS = [letter for letter in 'abcdefghijklmnopqrstuvwxyz']
     FIXED_SIZE = 20     # a.k.a. MAX_TIME, batch_x[batch_count, FIXED_SIZE, len(ALPHABETS)]
 
     @classmethod
@@ -31,22 +31,34 @@ class InputData:
         for i in xrange(step_count + 1):
             letters += WORD_TO_LEARN[i % len(WORD_TO_LEARN)]
         binVectorList = cls.lettersToBinVectorList(letters)
+
         return binVectorList
 
     @classmethod
     def lettersToBinVectorList(cls, letters):
         indexes = cls.lettersToIndexes(letters)
-        bin = LabelBinarizer().fit_transform(indexes)
-        if bin.shape[1] < len(cls.ALPHABETS):
-            bin = np.pad(bin, [(0, 0), (0, len(cls.ALPHABETS) - bin.shape[1])], 'constant')
-        return bin
+        bins = []
+        for index in indexes:
+            bin = [0 for l in cls.ALPHABETS]
+            bin[index] = 1
+            bins.append(bin)
+        bins = np.array(bins)
+        if bins.shape[1] < len(cls.ALPHABETS):
+            bins = np.pad(bins, [(0, 0), (0, len(cls.ALPHABETS) - bins.shape[1])], 'constant')
+        return bins
 
     @classmethod
     def lettersToIndexes(cls, letters):
         return [cls.ALPHABETS.index(letter) for letter in letters]
 
+    @classmethod
+    def pad(cls, word_vector_list):
+        if word_vector_list.shape[0] < cls.FIXED_SIZE:
+            return np.pad(word_vector_list, [(0, cls.FIXED_SIZE - word_vector_list.shape[0]), (0, 0)], 'constant')
+        else:
+            return word_vector_list
+
 if __name__ == '__main__':
-    batch_x, batch_y, batch_len = InputData.next_batch(10, min_len=3, max_len=20)
-    print(batch_x.shape)
-    print(batch_y.shape)
-    print(batch_len.shape)
+    batch_x, batch_len, batch_y = InputData.next_batch(2, min_len=1, max_len=1)
+    print(batch_x)
+    print(batch_y)
